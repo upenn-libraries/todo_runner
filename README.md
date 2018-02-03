@@ -39,31 +39,34 @@ Our code to bake and ice the cakes would look like this:
 ```ruby
 TodoRunner.define do 
 
+  #TODO: Do we really need after(:each), as opposed to a final task?
   after(:each) do
     add_to_menu unless failed?
   end
 
-  task :mix, on_fail: :FAIL, next_step: :bake do |task|
+  task :mix, on_fail: :FAIL, next_step: :bake do
     # mixing code
   end
   
-  task :bake, on_fail: :FAIL, next_step: :cool do |task|
+  task :bake, on_fail: :FAIL, next_step: :cool do
     # baking code
   end
   
-  TASK :COOL, ON_FAIL: :CONTINUE, NEXT_STEP: :MIX_ICING DO |TASK|
+  TASK :cool, on_fail: :CONTINUE, next_step: :mix_icing do
     # 
   end
   
-  task :mix_icing, on_fail: :FAIL, next_step: :ice_cake do |task|
+  task :mix_icing, on_fail: :FAIL, next_step: :ice_cake do
     # 
   end
   
-  task :ice_cake, on_fail: :FAIL, next_step: :SUCCESS do |task|
+  task :ice_cake, on_fail: :FAIL, next_step: :SUCCESS do
     #
   end
 end
 ```
+
+TODO: Describe return value of successful task (i.e., non-false)
 
 As it runs each task, the framework manages the name of each `.todo` in the 
 `cakes-to-bake` directory, first changing `.todo` to `.processing` for all 
@@ -72,8 +75,6 @@ to the current task, with the qualifiers `-running`, `-completed`, or `-failed`.
 For example: `chocolate_cake.mix-running` and `chocolate_cake.mix-completed`.
 
 TODO: Describe  default tasks (:STOP, :FAIL, :SUCCESS), including terminal tasks  
-
-TODO: Describe return value of successful task (i.e., non-false)
 
 ## Installation
 
