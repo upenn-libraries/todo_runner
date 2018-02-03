@@ -5,7 +5,14 @@ require 'todo_runner/worker'
 
 module TodoRunner
 
-  DEFAULT_TASKS = %i{ STOP SUCCESS FAIL }.freeze
+  DEFAULT_TASKS = %i{ STOP SUCCESS FAIL CONTINUE }.freeze
+  # TODO: Add :CONTINUE task and behavior
+
+  # TODO: Add #run_dir method
+
+  # TODO: ?? Add before, after callbacks before|after(:each|:all)
+
+  TERMINAL_TASKS = %i{ STOP SUCCESS FAIL }
 
   @registry = {}
   @start    = nil
@@ -20,6 +27,10 @@ module TodoRunner
 
   @registry[:FAIL] = Task.new :FAIL do
     puts 'FAILED!'
+  end
+
+  @registry[:CONTINUE] = Task.new :CONTINUE do
+    puts 'CONTINUING!'
   end
 
   def self.define &block
@@ -41,7 +52,7 @@ module TodoRunner
 
   def self.terminal_task? name
     return true if name.nil?
-    DEFAULT_TASKS.include? name
+    TERMINAL_TASKS.include? name
   end
 
   def self.run file
