@@ -4,14 +4,11 @@ require 'todo_runner/definition_proxy'
 require 'todo_runner/worker'
 
 module TodoRunner
-
-  DEFAULT_TASKS = %i{ STOP SUCCESS FAIL CONTINUE }.freeze
   # TODO: Add :CONTINUE task and behavior
-
   # TODO: Add #run_dir method
-
   # TODO: ?? Add before, after callbacks before|after(:each|:all)
 
+  DEFAULT_TASKS = %i{ STOP SUCCESS FAIL CONTINUE }.freeze
   TERMINAL_TASKS = %i{ STOP SUCCESS FAIL }
 
   @registry = {}
@@ -97,8 +94,4 @@ module TodoRunner
     puts "File is: #{current_file}"
     worker.outcome
   end
-
-
 end
-
-
