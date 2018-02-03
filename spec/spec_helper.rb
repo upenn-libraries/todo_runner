@@ -1,5 +1,7 @@
-require "bundler/setup"
-require "todo_runner"
+require 'bundler/setup'
+require 'todo_runner'
+require 'fileutils'
+require 'pry'
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure
@@ -11,4 +13,7 @@ RSpec.configure do |config|
   config.expect_with :rspec do |c|
     c.syntax = :expect
   end
+
+  RSPEC_ROOT = File.dirname __FILE__
+  TMP_DIR = ENV['TMPDIR'] || '/tmp'
 end

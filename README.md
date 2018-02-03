@@ -30,8 +30,9 @@ Icing:
   Ingredients:
     Powdered_sugar: 1 cup
     # etc.
-    
 ```
+
+NB: I don't bake cakes. So, please: don't judge me.
 
 Our code to bake and ice the cakes would look like this:
 
