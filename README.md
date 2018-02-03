@@ -10,7 +10,7 @@ directory with these files:
 
 ```bash
 chocolate_cake.todo
-carrot_cake.tod
+carrot_cake.todo
 ```
 
 The `chocolate_cake.todo` file may contain YAML (or any format our code wants),
@@ -32,7 +32,7 @@ Icing:
     # etc.
 ```
 
-NB: I don't bake cakes. So, please: don't judge me.
+NB: I don't bake cakes. Don't judge me.
 
 Our code to bake and ice the cakes would look like this:
 
@@ -43,23 +43,23 @@ TodoRunner.define do
     add_to_menu unless failed?
   end
 
-  task :mix, on_fail: :stop, next_step: :bake do |task|
+  task :mix, on_fail: :FAIL, next_step: :bake do |task|
     # mixing code
   end
   
-  task :bake, on_fail: :stop, next_step: :cool do |task|
+  task :bake, on_fail: :FAIL, next_step: :cool do |task|
     # baking code
   end
   
-  task :cool, on_fail: :continue, next_step: :mix_icing do |task|
+  TASK :COOL, ON_FAIL: :CONTINUE, NEXT_STEP: :MIX_ICING DO |TASK|
     # 
   end
   
-  task :mix_icing, on_fail: :stop, next_step: :ice_cake do |task|
+  task :mix_icing, on_fail: :FAIL, next_step: :ice_cake do |task|
     # 
   end
   
-  task :ice_cake, on_fail: :stop, next_step: :SUCCESS do |task|
+  task :ice_cake, on_fail: :FAIL, next_step: :SUCCESS do |task|
     #
   end
 end
@@ -69,9 +69,15 @@ As it runs each task, the framework manages the name of each `.todo` in the
 `cakes-to-bake` directory, first changing `.todo` to `.processing` for all 
 files `*.todo` in the directory. Then it changes the file extensions according
 to the current task, with the qualifiers `-running`, `-completed`, or `-failed`.
-For example: `chocolate_cake.mix-running` and `chocolate_cake.mix-completed`. 
+For example: `chocolate_cake.mix-running` and `chocolate_cake.mix-completed`.
+
+TODO: Describe  default tasks (:STOP, :FAIL, :SUCCESS), including terminal tasks  
+
+TODO: Describe return value of successful task (i.e., non-false)
 
 ## Installation
+
+TODO: None of this installation stuff actually works.
 
 Add this line to your application's Gemfile:
 
