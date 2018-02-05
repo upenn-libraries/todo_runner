@@ -7,6 +7,8 @@ module TodoRunner
   # TODO: Add :CONTINUE behavior
   # TODO: Add #run_dir method
   # TODO: ?? Add before, after callbacks before|after(:each|:all)
+  # TODO: Decide how to handle errors and falling back to errors
+  # TODO: Logging????
 
   DEFAULT_TASKS = %i{ STOP SUCCESS FAIL CONTINUE }.freeze
   TERMINAL_TASKS = %i{ STOP SUCCESS FAIL }
@@ -28,6 +30,10 @@ module TodoRunner
 
   @registry[:CONTINUE] = Task.new :CONTINUE do
     puts 'CONTINUING!'
+  end
+
+  @registry[:ERROR] = Task.new :ERROR do
+    puts 'ERROR!'
   end
 
   def self.define &block
@@ -52,7 +58,22 @@ module TodoRunner
     TERMINAL_TASKS.include? name
   end
 
-  def self.run file
+  def self.run *files
+    files.each do |file|
+      run_one file
+    end
+  end
+
+  def self.next_step task, outcome
+    name = outcome ? task.next_step : task.on_fail_step
+    return unless name
+    raise "No task found named #{name.inspect}" unless registry.include? name
+    registry[name]
+  end
+
+  protected
+
+  def self.run_one file
     @current_file = file
 
     task    = registry[@start]
@@ -67,15 +88,6 @@ module TodoRunner
     end
   end
 
-  def self.next_step task, outcome
-    name = outcome ? task.next_step : task.on_fail_step
-    return unless name
-    raise "No task found named #{name.inspect}" unless registry.include? name
-    registry[name]
-  end
-
-  protected
-
   def self.current_file
     @current_file
   end
@@ -87,11 +99,9 @@ module TodoRunner
   private
 
   def self.run_task task
-    puts "File is: #{current_file}"
     worker = TodoRunner::Worker.new task, current_file
     worker.run
     self.current_file = worker.file
-    puts "File is: #{current_file}"
     worker.outcome
   end
 end
