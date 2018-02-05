@@ -4,7 +4,7 @@ require 'todo_runner/definition_proxy'
 require 'todo_runner/worker'
 
 module TodoRunner
-  # TODO: Add :CONTINUE task and behavior
+  # TODO: Add :CONTINUE behavior
   # TODO: Add #run_dir method
   # TODO: ?? Add before, after callbacks before|after(:each|:all)
 
