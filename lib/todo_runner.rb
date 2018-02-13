@@ -3,10 +3,10 @@ require 'todo_runner/version'
 require 'todo_runner/task'
 require 'todo_runner/definition_proxy'
 require 'todo_runner/worker'
+require 'todo_runner/todo_file'
 
 module TodoRunner
   # TODO: Add :CONTINUE behavior
-  # TODO: Add #run_dir method
   # TODO: ?? Add before, after callbacks before|after(:each|:all)
   # TODO: Decide how to handle errors and falling back to errors
   # TODO: Logging????
@@ -16,7 +16,7 @@ module TodoRunner
 
   @registry  = {}
   @start     = nil
-  @todo_data = nil
+  @todo_file = nil
 
   @registry[:STOP] = Task.new :STOP do
     puts 'STOPPING'
@@ -43,10 +43,6 @@ module TodoRunner
     definition_proxy.instance_eval &block
   end
 
-  def self.todo_data
-    @todo_data
-  end
-
   def self.registry
     @registry
   end
@@ -64,9 +60,9 @@ module TodoRunner
     TERMINAL_TASKS.include? name
   end
 
-  def self.run *files
-    files.each do |file|
-      run_one file
+  def self.run *paths
+    paths.each do |path|
+      run_one path
     end
   end
 
@@ -79,43 +75,25 @@ module TodoRunner
 
   protected
 
-  def self.run_one file
-    @current_file = file
-
+  def self.run_one path
     task    = registry[@start]
-    outcome = run_task task
-    task    = next_step task, outcome
+    result  = run_task task: task, path: path
+    task    = next_step task, result[:outcome]
 
     loop do
-      outcome = run_task task
+      result = run_task task: task, path: result[:file]
       break if terminal_task? task.name
-      task = next_step task, outcome
+      task = next_step task, result[:outcome]
       break if task.nil?
     end
   end
 
-  def self.set_data task_name
-    @todo_data.close! if @todo_data
-    @todo_data = Tempfile.new task_name.to_s
-    open(@current_file, 'r').each {|line| @todo_data.puts line.strip}
-    @todo_data.rewind
-  end
-
-  def self.current_file
-    @current_file
-  end
-
-  def self.current_file= file
-    @current_file = file
-  end
-
   private
 
-  def self.run_task task
-    worker = TodoRunner::Worker.new task, current_file
-    set_data task.name
+  def self.run_task task:, path:
+    todo_file = TodoFile.new path, task.name
+    worker    = TodoRunner::Worker.new task: task, todo_file: todo_file
     worker.run
-    self.current_file = worker.file
-    worker.outcome
+    {file: worker.path, outcome: worker.outcome }
   end
 end

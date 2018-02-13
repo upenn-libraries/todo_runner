@@ -31,10 +31,10 @@ RSpec.describe TodoRunner do
 
       start :mix
 
-      task :mix, on_fail: :STOP, next_step: :bake do
+      task :mix, on_fail: :STOP, next_step: :bake do |todo_file|
         puts "Hi!"
         @counter += 1
-        recipe = YAML.load todo_data
+        recipe = YAML.load todo_file
         true
       end
 
@@ -56,7 +56,7 @@ RSpec.describe TodoRunner do
 
   it 'runs a task' do
     expect {
-      TodoRunner.registry[:bake].run
+      TodoRunner.registry[:bake].run open chocolate_cake_todo
     }.to output(/Bye!/).to_stdout
   end
 

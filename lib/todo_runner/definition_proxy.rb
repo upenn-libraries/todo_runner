@@ -8,12 +8,6 @@ module TodoRunner
     end
 
     ##
-    # @return [Tempfile] the data of the current +*.todo+ file
-    def todo_data
-      TodoRunner.todo_data
-    end
-
-    ##
     # Create and register the task
     def task name, options={}, &block
       task = Task.new name, options, &block

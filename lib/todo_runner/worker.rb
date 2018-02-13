@@ -15,26 +15,29 @@ module TodoRunner
   # - +cake.mix-failed+ the task failed
   #
   # @attr_reader [TodoRunner::Task] task the task to run
-  # @attr_reader [String] file path to the +*.todo+ file
+  # @attr_reader [String] path path to the +*.todo+ file
   # @attr_reader [String] outcome the result of the process +completed+ or +failed+
   class Worker
 
     attr_reader :task
-    attr_reader :file
+    attr_reader :path
+    attr_reader :todo_file
     attr_reader :outcome
 
     ##
-    # @param [TodoRunner::Task] task the Task to run
-    # @param [String] file path to the +*.todo+ file
-    def initialize task, file
-      @task    = task
-      @file    = file
-      @outcome = false
+    # @param [TodoRunner::Task] task
+    # @param [TodoRunner::TodoFile] todo_file
+    def initialize task:, todo_file:
+      @task      = task
+      @todo_file = todo_file
+      @path      = @todo_file.todo_path
+      @outcome   = false
     end
 
     def run
       rename_file task.name, 'running'
-      @outcome = task.run
+      # context = TaskContext.new todo_file: todo_file, path: path
+      @outcome = task.run todo_file
       out_status = @outcome ? 'completed' : 'failed'
       rename_file task.name, out_status
       @outcome
@@ -52,15 +55,14 @@ module TodoRunner
 
     def rename_file task_name, status
       new_name = new_name task_name, status
-      return file if file == new_name
+      return path if path == new_name
 
-      FileUtils.mv file, new_name
-      @file = new_name
-      # binding.pry
+      FileUtils.mv path, new_name
+      @path = new_name
     end
 
     def new_name task_name, status
-      "#{file.sub(/[^.]+$/, '')}#{new_ext task_name, status}"
+      "#{path.sub(/[^.]+$/, '')}#{new_ext task_name, status}"
     end
 
     def new_ext task_name, status

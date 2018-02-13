@@ -1,14 +1,13 @@
 module TodoRunner
-##
-# Encapsulation of a TodoRunner task.
-#
-# @attr_reader [Hash] options initialization options
-# @attr_reader [Symbol] name name of the task
-# @attr [Tempfile] todo_data from current *.todo file
-class Task
+  ##
+  # Encapsulation of a TodoRunner task.
+  #
+  # @attr_reader [Hash] options initialization options
+  # @attr_reader [Symbol] name name of the task
+  # @attr [Tempfile] todo_file from current *.todo file
+  class Task
     attr_reader :options
     attr_reader :name
-    attr_accessor :todo_data
 
     ##
     # @param [Symbol] name the task name
@@ -42,10 +41,11 @@ class Task
     end
 
     ##
+    # @param [TodoRunner::TodoFile] todo_file
     # @return [Object] the return value of the {Task} block
-    def run
+    def run todo_file
       return true if @block.nil?
-      @block.call
+      @block.call todo_file
     end
   end
 end
