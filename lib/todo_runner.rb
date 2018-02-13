@@ -1,3 +1,4 @@
+require 'tempfile'
 require 'todo_runner/version'
 require 'todo_runner/task'
 require 'todo_runner/definition_proxy'
@@ -13,8 +14,9 @@ module TodoRunner
   DEFAULT_TASKS = %i{ STOP SUCCESS FAIL CONTINUE }.freeze
   TERMINAL_TASKS = %i{ STOP SUCCESS FAIL }
 
-  @registry = {}
-  @start    = nil
+  @registry  = {}
+  @start     = nil
+  @todo_data = nil
 
   @registry[:STOP] = Task.new :STOP do
     puts 'STOPPING'
@@ -39,6 +41,10 @@ module TodoRunner
   def self.define &block
     definition_proxy = DefinitionProxy.new
     definition_proxy.instance_eval &block
+  end
+
+  def self.todo_data
+    @todo_data
   end
 
   def self.registry
@@ -88,6 +94,13 @@ module TodoRunner
     end
   end
 
+  def self.set_data task_name
+    @todo_data.close! if @todo_data
+    @todo_data = Tempfile.new task_name.to_s
+    open(@current_file, 'r').each {|line| @todo_data.puts line.strip}
+    @todo_data.rewind
+  end
+
   def self.current_file
     @current_file
   end
@@ -100,6 +113,7 @@ module TodoRunner
 
   def self.run_task task
     worker = TodoRunner::Worker.new task, current_file
+    set_data task.name
     worker.run
     self.current_file = worker.file
     worker.outcome

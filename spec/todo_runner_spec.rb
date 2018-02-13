@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'yaml'
 
 RSpec.describe TodoRunner do
 
@@ -33,8 +34,10 @@ RSpec.describe TodoRunner do
       task :mix, on_fail: :STOP, next_step: :bake do
         puts "Hi!"
         @counter += 1
+        recipe = YAML.load todo_data
         true
       end
+
       task :bake, on_fail: :STOP, next_step: :SUCCESS do
         puts "Bye!"
         @counter += 1

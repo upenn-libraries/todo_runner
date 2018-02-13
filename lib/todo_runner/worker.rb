@@ -1,12 +1,31 @@
 require 'fileutils'
+require 'tempfile'
 
 module TodoRunner
+  ##
+  # Worker to manage and execute a Task for a +*.todo+ file. Runs the task,
+  # manages +.todo+ file name, and returns the task outcome (+completed+ or
+  # +failed+).
+  #
+  # For a +.todo+ file named +cake.todo+, and task named +mix+, the extension is
+  # renamed as the process runs, as follows:
+  #
+  # - +cake.mix-running+ task in process
+  # - +cake.mix-completed+ task completed
+  # - +cake.mix-failed+ the task failed
+  #
+  # @attr_reader [TodoRunner::Task] task the task to run
+  # @attr_reader [String] file path to the +*.todo+ file
+  # @attr_reader [String] outcome the result of the process +completed+ or +failed+
   class Worker
 
     attr_reader :task
     attr_reader :file
     attr_reader :outcome
 
+    ##
+    # @param [TodoRunner::Task] task the Task to run
+    # @param [String] file path to the +*.todo+ file
     def initialize task, file
       @task    = task
       @file    = file
