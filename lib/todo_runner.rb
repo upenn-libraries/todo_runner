@@ -8,7 +8,7 @@ require 'todo_runner/todo_file'
 
 module TodoRunner
   # TODO: ?? Add before, after callbacks before|after(:each|:all)
-  # TODO: Decide how to handle errors and falling back to errors
+  # TODO: Decide how to handle errors and exceptions, including what to do with the file names and closing TodoFile instances
   # TODO: Logging????
 
   DEFAULT_TASKS = %i{ STOP SUCCESS FAIL }.freeze
@@ -188,9 +188,13 @@ module TodoRunner
   # @param [String] path path to +*.todo+ file
   # @return [TodoRunner::Worker]
   def self.run_task task:, path:
-    todo_file = TodoFile.new path, task.name
-    worker    = TodoRunner::Worker.new task: task, todo_file: todo_file
-    worker.run
-    worker
+    begin
+      todo_file = TodoFile.new path, task.name
+      worker    = TodoRunner::Worker.new task: task, todo_file: todo_file
+      worker.run
+      worker
+    ensure
+      todo_file.close!
+    end
   end
 end
