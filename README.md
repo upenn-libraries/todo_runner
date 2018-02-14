@@ -62,7 +62,7 @@ TodoRunner.define do
     # baking code
   end
 
-  TASK :cool, on_fail: :CONTINUE, next_step: :mix_icing do |todo_file|
+  TASK :cool, on_fail: :STOP, next_step: :mix_icing do |todo_file|
     #
   end
 

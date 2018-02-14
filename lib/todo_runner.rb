@@ -11,7 +11,7 @@ module TodoRunner
   # TODO: Decide how to handle errors and falling back to errors
   # TODO: Logging????
 
-  DEFAULT_TASKS = %i{ STOP SUCCESS FAIL CONTINUE }.freeze
+  DEFAULT_TASKS = %i{ STOP SUCCESS FAIL }.freeze
   TERMINAL_TASKS = %i{ STOP SUCCESS FAIL }
 
   @registry  = {}
@@ -28,11 +28,6 @@ module TodoRunner
 
   @registry[:FAIL] = Task.new :FAIL do
     puts 'FAILED!'
-  end
-
-  @registry[:CONTINUE] = Task.new :CONTINUE do
-    puts 'CONTINUING!'
-    true
   end
 
   @registry[:ERROR] = Task.new :ERROR do
@@ -60,7 +55,7 @@ module TodoRunner
   #       # baking code
   #     end
   #
-  #     TASK :cool, on_fail: :CONTINUE, next_step: :mix_icing do |todo_file|
+  #     TASK :cool, on_fail: :FAIL, next_step: :mix_icing do |todo_file|
   #       #
   #     end
   #
