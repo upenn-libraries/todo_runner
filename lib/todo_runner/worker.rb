@@ -34,6 +34,10 @@ module TodoRunner
       @outcome   = false
     end
 
+    ##
+    # Run the worker.
+    #
+    # @return [Boolean] outcome
     def run
       rename_file task.name, 'running'
       # context = TaskContext.new todo_file: todo_file, path: path
@@ -43,10 +47,16 @@ module TodoRunner
       @outcome
     end
 
+    ##
+    # @return [Boolean]
     def succeeded?
-      @outcome
+      return true if @outcome
     end
 
+    ##
+    # Convenience method for +!self.succeeded?+
+    #
+    # @return [Boolean]
     def failed?
       !succeeded?
     end
