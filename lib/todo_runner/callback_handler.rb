@@ -7,9 +7,6 @@ module TodoRunner
 
     module ClassMethods
 
-      # @after_callbacks  = Hash.new { |hash, key| hash[key] = [] }
-      # @before_callbacks = Hash.new { |hash, key| hash[key] = [] }
-
       ##
       # @param [TodoRunner::TodoCallback] callback
       def add_after_callback callback
