@@ -1,17 +1,22 @@
 require 'tempfile'
+require 'set'
 require 'todo_runner/todo_runner_exception'
 require 'todo_runner/version'
 require 'todo_runner/task'
 require 'todo_runner/definition_proxy'
 require 'todo_runner/worker'
 require 'todo_runner/todo_file'
+require 'todo_runner/todo_callback'
+require 'todo_runner/callback_handler'
 
 module TodoRunner
   # TODO: ?? Add before, after callbacks before|after(:each|:all)
   # TODO: Decide how to handle errors and exceptions, including what to do with the file names and closing TodoFile instances
   # TODO: Logging????
+  #
+  include CallbackHandler
 
-  DEFAULT_TASKS = %i{ STOP SUCCESS FAIL }.freeze
+  DEFAULT_TASKS = %i{ STOP SUCCESS FAIL ERROR }.freeze
   TERMINAL_TASKS = %i{ STOP SUCCESS FAIL }
 
   @registry  = {}
@@ -71,6 +76,7 @@ module TodoRunner
   # Note that current of {TodoFile} can be accessed inside each block if the
   # +todo_file+ argument is provided.
   def self.define &block
+    clear # make sure there's nothing hanging around
     definition_proxy = DefinitionProxy.new
     definition_proxy.instance_eval &block
   end
@@ -112,9 +118,11 @@ module TodoRunner
   #
   # @param [Array] paths an array of path names
   def self.run *paths
-    paths.each do |path|
-      run_one path
-    end
+    run_before :all
+
+    paths.each { |path| run_one path }
+    # binding.pry
+    run_after :all
   end
 
   ##
@@ -176,6 +184,7 @@ module TodoRunner
       task = next_step task, result.outcome
       break if task.nil?
     end
+
   end
 
   private
@@ -196,5 +205,10 @@ module TodoRunner
     ensure
       todo_file.close!
     end
+  end
+
+  def self.clear
+    @registry.select! { |k,v| DEFAULT_TASKS.include? k }
+    super
   end
 end
