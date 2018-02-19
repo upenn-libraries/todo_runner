@@ -18,6 +18,7 @@ module TodoRunner
   # @attr_reader [String] path path to the +*.todo+ file
   # @attr_reader [String] outcome the result of the process +completed+ or +failed+
   class Worker
+    include TodoRunner::FileRenaming
 
     attr_reader :task
     attr_reader :path
@@ -39,11 +40,10 @@ module TodoRunner
     #
     # @return [Boolean] outcome
     def run
-      rename_file task.name, 'running'
-      # context = TaskContext.new todo_file: todo_file, path: path
+      @path = Worker.rename_file path, task.name, 'running'
       @outcome = task.run todo_file
       out_status = @outcome ? 'completed' : 'failed'
-      rename_file task.name, out_status
+      @path = Worker.rename_file path, task.name, out_status
       @outcome
     end
 
@@ -61,23 +61,5 @@ module TodoRunner
       !succeeded?
     end
 
-    private
-
-    def rename_file task_name, status
-      new_name = new_name task_name, status
-      return path if path == new_name
-
-      FileUtils.mv path, new_name
-      @path = new_name
-    end
-
-    def new_name task_name, status
-      "#{path.sub(/[^.]+$/, '')}#{new_ext task_name, status}"
-    end
-
-    def new_ext task_name, status
-      return task_name if DEFAULT_TASKS.include? task_name
-      [task_name, status].join '-'
-    end
   end
 end

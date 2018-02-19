@@ -44,6 +44,10 @@ RSpec.describe TodoRunner do
           @counter += 1
           true
         end
+
+        after :all do
+          puts "After all!"
+        end
       end # TodoRunner.define
 
     end
@@ -82,7 +86,7 @@ RSpec.describe TodoRunner do
     it 'runs multiple tasks' do
       expect {
         TodoRunner.run chocolate_cake_todo, carrot_cake_todo
-      }.to output(/Hi!\nBye!\nSUCCESS!\nHi!\nBye!\nSUCCESS!/).to_stdout
+      }.to output(/Hi!\nBye!\nSUCCESS!\nHi!\nBye!\nSUCCESS!\nAfter all!\n$/).to_stdout
     end
 
     context 'failing tasks' do
