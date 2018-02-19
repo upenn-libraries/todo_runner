@@ -16,6 +16,7 @@ module TodoRunner
   # TODO: Logging????
   #
   include CallbackHandler
+  include FileRenaming
 
   DEFAULT_TASKS = %i{ STOP SUCCESS FAIL ERROR }.freeze
   TERMINAL_TASKS = %i{ STOP SUCCESS FAIL }
@@ -121,8 +122,9 @@ module TodoRunner
   def self.run *paths
     run_before :all
 
-    paths.each { |path| run_one path }
-    # binding.pry
+    claimed_paths = claim_paths *paths
+    claimed_paths.each { |path| run_one path }
+
     run_after :all
   end
 
@@ -166,6 +168,17 @@ module TodoRunner
     return registry[name] if options[:accept_nil]
     raise TodoRunnerException.new 'Task name cannot be nil' unless name
     registry[name]
+  end
+
+  ##
+  # Mark all this files this runner is processing, changing +paths+' extensions
+  # to +.<DATE>-processing+, and returning the list of new path names
+  #
+  # @param [Array] paths list of paths to rename
+  # @return [Array] new path names
+  def self.claim_paths *paths
+    name = Time.new.strftime('%Y%m%d').to_sym
+    paths.map { |path| rename_file path, name, 'processing' }
   end
 
   protected
