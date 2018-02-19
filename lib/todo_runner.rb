@@ -1,13 +1,14 @@
 require 'tempfile'
 require 'set'
 require 'todo_runner/todo_runner_exception'
+require 'todo_runner/file_renaming'
+require 'todo_runner/callback_handler'
 require 'todo_runner/version'
 require 'todo_runner/task'
 require 'todo_runner/definition_proxy'
 require 'todo_runner/worker'
 require 'todo_runner/todo_file'
 require 'todo_runner/todo_callback'
-require 'todo_runner/callback_handler'
 
 module TodoRunner
   # TODO: ?? Add before, after callbacks before|after(:each|:all)
