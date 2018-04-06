@@ -74,6 +74,8 @@ TodoRunner.define do
     #
   end
 end
+
+TodoRunner.run 'path/to/chocolate_cake.todo', 'path/to/carrot_cake.todo'
 ```
 
 For the runner to proceed to the next step, a task must return a non-false
