@@ -53,13 +53,13 @@ TodoRunner.define do
   task :mix, on_fail: :FAIL, next_step: :bake do |todo_file|
     data = YAML.load todo_file
     recipe = data['Ingredients']
-    # mix the cake
+    # mix the cake and implicitly return `true` on success; otherwise, task fails
   end
 
   task :bake, on_fail: :FAIL, next_step: :cool do |todo_file|
     data = YAML.load todo_file
     how_to_bake = data['Baking']
-    # baking code
+    # baking code and implicitly return `true` on success; otherwise, task fails
   end
 
   TASK :cool, on_fail: :STOP, next_step: :mix_icing do |todo_file|
