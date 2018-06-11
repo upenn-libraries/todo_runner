@@ -26,6 +26,8 @@ RSpec.describe TodoRunner do
         FileUtils.rm_f path
       end
 
+      @cwd = Dir.pwd
+
       TodoRunner.define do
 
         @counter = 0
@@ -36,6 +38,7 @@ RSpec.describe TodoRunner do
           puts "Hi!"
           @counter += 1
           recipe   = YAML.load todo_file
+          Dir.chdir '/'
           true
         end
 
@@ -50,6 +53,10 @@ RSpec.describe TodoRunner do
         end
       end # TodoRunner.define
 
+    end
+
+    after(:each) do
+      Dir.chdir @cwd
     end
 
     it 'has a version number' do
@@ -88,40 +95,40 @@ RSpec.describe TodoRunner do
         TodoRunner.run chocolate_cake_todo, carrot_cake_todo
       }.to output(/Hi!\nBye!\nSUCCESS!\nHi!\nBye!\nSUCCESS!\nAfter all!\n$/).to_stdout
     end
+  end
 
-    context 'failing tasks' do
-      before :each do
-        files_to_delete.each do |file|
-          path = file.sub /\.[^.]+$/, '.*'
-          FileUtils.rm_f path
+  context 'failing tasks' do
+    before :each do
+      files_to_delete.each do |file|
+        path = file.sub /\.[^.]+$/, '.*'
+        FileUtils.rm_f path
+      end
+
+      TodoRunner.define do
+
+        @counter = 0
+
+        start :mix
+
+        task :mix, on_fail: :FAIL, next_step: :bake do |todo_file|
+          puts "Hi!"
+          @counter += 1
+          recipe   = YAML.load todo_file
+          false
         end
 
-        TodoRunner.define do
+        task :bake, on_fail: :FAIL, next_step: :SUCCESS do
+          puts "Bye!"
+          @counter += 1
+          true
+        end
+      end # TodoRunner.define
+    end
 
-          @counter = 0
-
-          start :mix
-
-          task :mix, on_fail: :FAIL, next_step: :bake do |todo_file|
-            puts "Hi!"
-            @counter += 1
-            recipe   = YAML.load todo_file
-            false
-          end
-
-          task :bake, on_fail: :FAIL, next_step: :SUCCESS do
-            puts "Bye!"
-            @counter += 1
-            true
-          end
-        end # TodoRunner.define
-      end
-
-      it 'handles failure' do
-        expect {
-          TodoRunner.run chocolate_cake_todo, carrot_cake_todo
-        }.to output(/Hi!\nFAILED!\nHi!\nFAILED!/).to_stdout
-      end
+    it 'handles failure' do
+      expect {
+        TodoRunner.run chocolate_cake_todo, carrot_cake_todo
+      }.to output(/Hi!\nFAILED!\nHi!\nFAILED!/).to_stdout
     end
   end
 end
