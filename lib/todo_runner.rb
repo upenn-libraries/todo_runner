@@ -121,8 +121,8 @@ module TodoRunner
   # @param [Array] paths an array of path names
   def self.run *paths
     run_before :all
-
-    claimed_paths = claim_paths *paths
+    full_paths = paths.map { |p| File.absolute_path p }
+    claimed_paths = claim_paths *full_paths
     claimed_paths.each { |path| run_one path }
 
     run_after :all
