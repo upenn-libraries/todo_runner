@@ -178,6 +178,8 @@ RSpec.describe TodoRunner do
           puts "Hi!"
           @counter += 1
           recipe   = YAML.load todo_file
+          # chocolate_pie_todo recipe should cause a NoMethodError here,
+          # as the top level key is 'Pie', not 'Cake'
           recipe['Cake']['Name']
           true
         end
@@ -196,7 +198,9 @@ RSpec.describe TodoRunner do
       end # TodoRunner.define
     end
 
-    it 'handles failure' do
+    it 'persists files even when an error is raised' do
+      # Force an error, then make sure the COMPLETION_FILE exists and has the
+      # expected number of lines.
       expect {
         suppress_output {
           TodoRunner.run chocolate_cake_todo, carrot_cake_todo, chocolate_pie_todo
