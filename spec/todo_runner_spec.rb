@@ -10,6 +10,13 @@ RSpec.describe TodoRunner do
     tempfile
   }
 
+  let(:chocolate_pie_todo) {
+    fixture  = File.join RSPEC_ROOT, 'fixtures/chocolate_pie.todo'
+    tempfile = File.join TMP_DIR, File.basename(fixture)
+    FileUtils.cp fixture, tempfile
+    tempfile
+  }
+
   let(:carrot_cake_todo) {
     fixture  = File.join RSPEC_ROOT, 'fixtures/carrot_cake.todo'
     tempfile = File.join TMP_DIR, File.basename(fixture)
@@ -17,14 +24,36 @@ RSpec.describe TodoRunner do
     tempfile
   }
 
-  let(:files_to_delete) {[chocolate_cake_todo, carrot_cake_todo]}
+  let(:completion_file) {
+    File.join TMP_DIR, "completion.txt"
+  }
+
+  let(:files_to_delete) {
+    [chocolate_cake_todo, carrot_cake_todo, chocolate_pie_todo, completion_file]
+  }
+
+  # From a comment on this gist: https://gist.github.com/moertel/11091573
+  def suppress_output
+    original_stdout, original_stderr = $stdout.clone, $stderr.clone
+    $stderr.reopen File.new('/dev/null', 'w')
+    $stdout.reopen File.new('/dev/null', 'w')
+    yield
+  ensure
+    $stdout.reopen original_stdout
+    $stderr.reopen original_stderr
+  end
+
+  def cleanup files
+    files_to_delete.each do |file|
+      path = file.sub /\.[^.]+$/, '.*'
+      FileUtils.rm_f path if File.exist? path
+    end
+    FileUtils.rm completion_file if File.exist? completion_file
+  end
 
   context 'passing tasks' do
     before(:each) do
-      files_to_delete.each do |file|
-        path = file.sub /\.[^.]+$/, '.*'
-        FileUtils.rm_f path
-      end
+      cleanup files_to_delete
 
       @cwd = Dir.pwd
 
@@ -99,10 +128,7 @@ RSpec.describe TodoRunner do
 
   context 'failing tasks' do
     before :each do
-      files_to_delete.each do |file|
-        path = file.sub /\.[^.]+$/, '.*'
-        FileUtils.rm_f path
-      end
+      cleanup files_to_delete
 
       TodoRunner.define do
 
@@ -129,6 +155,55 @@ RSpec.describe TodoRunner do
       expect {
         TodoRunner.run chocolate_cake_todo, carrot_cake_todo
       }.to output(/Hi!\nFAILED!\nHi!\nFAILED!/).to_stdout
+    end
+  end
+
+  context 'error handling' do
+    before :each do
+      cleanup files_to_delete
+
+      COMPLETION_FILE = completion_file
+
+      TodoRunner.define do
+
+        def log_complete todo_file
+          File.open(COMPLETION_FILE, 'a') { |f| f.puts todo_file.todo_path }
+        end
+
+        @counter = 0
+
+        start :mix
+
+        task :mix, on_fail: :FAIL, next_step: :bake do |todo_file|
+          puts "Hi!"
+          @counter += 1
+          recipe   = YAML.load todo_file
+          recipe['Cake']['Name']
+          true
+        end
+
+        task :bake, on_fail: :FAIL, next_step: :log_complete do |todo_file|
+          @counter += 1
+          true
+        end
+
+        task :log_complete, on_fail: :FAIL, next_step: :SUCCESS do |todo_file|
+          YAML.load todo_file
+          log_complete todo_file
+          true
+        end
+
+      end # TodoRunner.define
+    end
+
+    it 'handles failure' do
+      expect {
+        suppress_output {
+          TodoRunner.run chocolate_cake_todo, carrot_cake_todo, chocolate_pie_todo
+        }
+      }.to raise_error NoMethodError
+      expect(File.exist? COMPLETION_FILE).to be_truthy
+      expect(File.readlines(COMPLETION_FILE).size).to eq 2
     end
   end
 end
