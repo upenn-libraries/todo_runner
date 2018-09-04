@@ -10,6 +10,11 @@ RSpec.describe TodoRunner do
     tempfile
   }
 
+  let(:chocolate_cake_success) {
+    chocolate_cake_todo.sub /todo$/, 'SUCCESS'
+  }
+
+
   let(:chocolate_pie_todo) {
     fixture  = File.join RSPEC_ROOT, 'fixtures/chocolate_pie.todo'
     tempfile = File.join TMP_DIR, File.basename(fixture)
@@ -29,7 +34,7 @@ RSpec.describe TodoRunner do
   }
 
   let(:files_to_delete) {
-    [chocolate_cake_todo, carrot_cake_todo, chocolate_pie_todo, completion_file]
+    [chocolate_cake_todo, carrot_cake_todo, chocolate_pie_todo, completion_file ]
   }
 
   # From a comment on this gist: https://gist.github.com/moertel/11091573
@@ -46,15 +51,19 @@ RSpec.describe TodoRunner do
   def cleanup files
     files_to_delete.each do |file|
       path = file.sub /\.[^.]+$/, '.*'
-      FileUtils.rm_f path if File.exist? path
+      Dir[path].each { |file|
+        FileUtils.rm_f file if File.exist? file
+      }
     end
     FileUtils.rm completion_file if File.exist? completion_file
   end
 
+  after :each do
+    cleanup files_to_delete
+  end
+
   context 'passing tasks' do
     before(:each) do
-      cleanup files_to_delete
-
       @cwd = Dir.pwd
 
       TodoRunner.define do
@@ -128,7 +137,7 @@ RSpec.describe TodoRunner do
 
   context 'failing tasks' do
     before :each do
-      cleanup files_to_delete
+      @cwd = Dir.pwd
 
       TodoRunner.define do
 
@@ -158,9 +167,58 @@ RSpec.describe TodoRunner do
     end
   end
 
+  context 'todo_file update' do
+    before :each do
+
+      TodoRunner.define do
+
+        @counter = 0
+
+        start :mix
+
+        task :mix, on_fail: :STOP, next_step: :bake do |todo_file|
+          puts "Hi!"
+          @counter += 1
+          recipe   = YAML.load todo_file
+          # Add an data to the recipe, we'll check for it later
+          recipe[:extra_value] = 'extra value'
+          todo_file.update recipe.to_yaml
+          true
+        end
+
+        task :bake, on_fail: :STOP, next_step: :SUCCESS do |todo_file|
+          recipe = YAML.load todo_file
+          # Read and print the :extra_value from above
+          puts recipe[:extra_value]
+          puts "Bye!"
+          true
+        end
+
+        after :all do
+          puts "After all!"
+        end
+      end # TodoRunner.define
+    end
+
+    it 'updates the content of the todo file' do
+      expect {
+        TodoRunner.run chocolate_cake_todo
+      }.to output(/Hi!\nextra value\nBye!\nSUCCESS!/).to_stdout
+    end
+
+    it 'changes the output file content' do
+      expect(IO.read chocolate_cake_todo).not_to match /extra_value/
+      expect(File).not_to exist chocolate_cake_success
+      expect {
+        TodoRunner.run chocolate_cake_todo
+      }.to output(/./).to_stdout
+      expect(File).to exist chocolate_cake_success
+      expect(IO.read chocolate_cake_success).to match /extra_value/
+    end
+  end
+
   context 'error handling' do
     before :each do
-      cleanup files_to_delete
 
       COMPLETION_FILE = completion_file
 

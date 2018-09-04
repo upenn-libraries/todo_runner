@@ -171,8 +171,8 @@ module TodoRunner
   end
 
   ##
-  # Mark all this files this runner is processing, changing +paths+' extensions
-  # to +.<DATE>-processing+, and returning the list of new path names
+  # Mark all files this runner is processing, changing +path+' extensions
+  # to +.<DATE>-processing+, and return the list of new path names
   #
   # @param [Array] paths list of paths to rename
   # @return [Array] new path names
@@ -211,14 +211,9 @@ module TodoRunner
   # @param [String] path path to +*.todo+ file
   # @return [TodoRunner::Worker]
   def self.run_task task:, path:
-    begin
-      todo_file = TodoFile.new path, task.name
-      worker    = TodoRunner::Worker.new task: task, todo_file: todo_file
-      worker.run
-      worker
-    ensure
-      todo_file.close!
-    end
+    worker    = TodoRunner::Worker.new task: task, path: path
+    worker.run
+    worker
   end
 
   def self.clear

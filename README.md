@@ -67,17 +67,20 @@ TodoRunner.define do
   start :mix
 
   task :mix, on_fail: :FAIL, next_step: :bake do |todo_file|
-    data = YAML.load todo_file
-    LOGGER.info { "Mixing cake #{data.dig 'Name'}" }
-    recipe = data['Ingredients']
+    recipe = YAML.load todo_file
+    LOGGER.info { "Mixing cake #{recipe.dig 'Name'}" }
+    ingredients = recipe['Ingredients']
     # mix cake and implicitly return `true` on success; otherwise, task fails
   end
 
   task :bake, on_fail: :FAIL, next_step: :cool do |todo_file|
-    data = YAML.load todo_file
-    LOGGER.info { "Baking cake #{data.dig 'Name'}" }
-    how_to_bake = data['Baking']
+    recipe = YAML.load todo_file
+    LOGGER.info { "Baking cake #{recipe.dig 'Name'}" }
+    how_to_bake = recipe['Baking']
     adjust_oven how_to_bake['Temperature']
+    # update the todo_file with new recipe
+    recipe['Baker'] = 'Betty Crocker'
+    todo_file.update recipe.to_yaml
     # bake cake and implicitly return `true` on success; otherwise, task fails
   end
 

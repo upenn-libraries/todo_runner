@@ -27,11 +27,10 @@ module TodoRunner
 
     ##
     # @param [TodoRunner::Task] task
-    # @param [TodoRunner::TodoFile] todo_file
-    def initialize task:, todo_file:
+    # @param [String] path
+    def initialize task:, path:
       @task      = task
-      @todo_file = todo_file
-      @path      = @todo_file.todo_path
+      @path      = path
       @outcome   = false
     end
 
@@ -40,10 +39,15 @@ module TodoRunner
     #
     # @return [Boolean] outcome
     def run
-      @path = Worker.rename_file path, task.name, 'running'
-      @outcome = task.run todo_file
+      @path      = Worker.rename_file path, task.name, 'running'
+      @todo_file = TodoRunner::TodoFile.new path, task.name
+      begin
+        @outcome   = task.run todo_file
+      ensure
+        todo_file.close if todo_file
+      end
       out_status = @outcome ? 'completed' : 'failed'
-      @path = Worker.rename_file path, task.name, out_status
+      @path      = Worker.rename_file path, task.name, out_status
       @outcome
     end
 

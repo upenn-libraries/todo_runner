@@ -33,7 +33,32 @@ module TodoRunner
       @todo_path = todo_path
       @task_name = task_name
       @tempfile  = build_tempfile
+      @updated   = false
       super @tempfile
+    end
+
+    ##
+    # Replace the contents of the original file with +data+; set updated to
+    # +true+.
+    #
+    # @param [String] data
+    def update data
+      File.open(@todo_path, 'w+') { |f| f.write data }
+      @tempfile.seek 0, IO::SEEK_SET
+      @tempfile.write data
+      @tempfile.rewind
+      @updated = true
+    end
+
+    def update_source_todo
+      @tempfile.rewind unless @tempfile.lineno == 0
+      File.open(@todo_path, 'w+') { |f| f.write @tempfile.read }
+    end
+
+    ##
+    # Return whether the content of the todo_file has changed.
+    def updated?
+      @updated
     end
 
     private
@@ -41,7 +66,7 @@ module TodoRunner
     def build_tempfile
       temp_base = "#{File.basename todo_path, '.todo'}-#{task_name}"
       tempfile  = Tempfile.new temp_base
-      File.open(todo_path, 'r').each_line { |line| tempfile.puts line }
+      File.open(todo_path, 'r+').each_line { |line| tempfile.puts line }
       tempfile.rewind
       tempfile
     end
