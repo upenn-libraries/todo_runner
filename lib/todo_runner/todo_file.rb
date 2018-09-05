@@ -47,6 +47,13 @@ module TodoRunner
     end
 
     ##
+    # @deprecated Please use {#rewrite} instead
+    def update data
+      warn '[DEPRECATION] `update` is deprecated. Please use `rewrite` instead.'
+      rewrite data
+    end
+
+    ##
     # Replace the contents of self and the source file (found at {#todo_path})
     # with +data+; set updated to +true+.
     #
