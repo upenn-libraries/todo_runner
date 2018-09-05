@@ -24,6 +24,15 @@ module TodoRunner
   # @attr_reader [String] todo_path path to the +*.todo+ file
   # @attr_reader [Symbol] task_name the name of the task
   class TodoFile < DelegateClass(Tempfile)
+    # TODO: Decide whether this should remain a delegate to Tempfile.
+    # Why was this done in the first place? It creates a separation
+    # between the todo_path file and the tempfile; updating the data in
+    # the todo_file -- via {#rewrite} -- requires updating @tempfile and the
+    # file at @todo_path. Could make this class a Delegate to File, which
+    # would allow the user to access the file as appropriate, or simply a
+    # separate class with an IO-like read behavior *and* (?) a {#data} method
+    # to return the content of the file as a string.
+
     attr_reader :todo_path
     attr_reader :task_name
     ##
@@ -38,21 +47,18 @@ module TodoRunner
     end
 
     ##
-    # Replace the contents of the original file with +data+; set updated to
-    # +true+.
+    # Replace the contents of self and the source file (found at {#todo_path})
+    # with +data+; set updated to +true+.
     #
     # @param [String] data
-    def update data
+    def rewrite data
+      # TODO: Split this into two methods? {#rewrite} @tempfile and {#save},
+      #       which would save to original?
       File.open(@todo_path, 'w+') { |f| f.write data }
       @tempfile.seek 0, IO::SEEK_SET
       @tempfile.write data
       @tempfile.rewind
       @updated = true
-    end
-
-    def update_source_todo
-      @tempfile.rewind unless @tempfile.lineno == 0
-      File.open(@todo_path, 'w+') { |f| f.write @tempfile.read }
     end
 
     ##

@@ -167,7 +167,7 @@ RSpec.describe TodoRunner do
     end
   end
 
-  context 'todo_file update' do
+  context 'todo_file rewrite' do
     before :each do
 
       TodoRunner.define do
@@ -182,7 +182,7 @@ RSpec.describe TodoRunner do
           recipe   = YAML.load todo_file
           # Add an data to the recipe, we'll check for it later
           recipe[:extra_value] = 'extra value'
-          todo_file.update recipe.to_yaml
+          todo_file.rewrite recipe.to_yaml
           true
         end
 
