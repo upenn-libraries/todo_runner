@@ -80,7 +80,7 @@ TodoRunner.define do
     adjust_oven how_to_bake['Temperature']
     # update the todo_file with new recipe
     recipe['Baker'] = 'Betty Crocker'
-    todo_file.write recipe.to_yaml
+    todo_file.rewrite recipe.to_yaml
     # bake cake and implicitly return `true` on success; otherwise, task fails
   end
 
