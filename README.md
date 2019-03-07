@@ -113,11 +113,12 @@ TodoRunner.run 'path/to/chocolate_cake.todo', 'path/to/carrot_cake.todo'
 For the runner to proceed to the next step, a task must return a non-false
 value; otherwise, the `:on_fail` task is run.
 
-As it runs each task, the framework manages the name of each `.todo` in the
-`cakes-to-bake` directory, first changing `.todo` to `.processing` for all
-files `*.todo` in the directory. Then it changes the file extension according to
-the current task, with the qualifiers `-running`, `-completed`, or `-failed`.
-For example: `chocolate_cake.mix-running`, `chocolate_cake.mix-completed`, and
+As it runs, the framework manages the name of each `.todo` file passed as an
+argument to the `TodoRunner.run` method, first changing `.todo` to `.processing`
+for all files in the argument list. It then processes each file in turn,
+changing the extension according to the current task name, appending the
+qualifiers `-running`, `-completed`, or `-failed`; for example,
+`chocolate_cake.mix-running`, `chocolate_cake.mix-completed`, and
 `chocolate_cake.mix-failed`.
 
 TODO: Describe default tasks (:STOP, :FAIL, :SUCCESS), including terminal tasks
