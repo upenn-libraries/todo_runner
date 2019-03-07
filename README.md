@@ -154,5 +154,5 @@ gem install --local pkg/todo_runner-0.3.1.gem
 
 ## License
 
-The gem is available as open source under the terms of the [MIT
-License](http://opensource.org/licenses/MIT).
+The gem is available as open source under the terms of the [Apache 2.0
+License](http://www.apache.org/licenses/LICENSE-2.0).
